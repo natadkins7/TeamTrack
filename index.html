@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TeamTrack – IBC Project Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f3f5f4;
+  --surface:#ffffff;
+  --ink:#17211d;
+  --ink-2:#47534e;
+  --ink-3:#7a8781;
+  --rule:#dfe5e2;
+  --rule-2:#eef1ef;
+  --brand:#1f5d4c;
+  --brand-2:#2f7a64;
+  --brand-wash:#e6f0ec;
+  --late:#c23a3a; --late-wash:#fbeaea;
+  --risk:#b86e00; --risk-wash:#fcf1df;
+  --ok:#1d8a55;   --ok-wash:#e4f4ea;
+  --idle:#5d6a92; --idle-wash:#eceffa;
+  --r-sm:6px; --r-md:10px; --r-lg:16px;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --sidebar:248px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;overflow-x:clip}
+body{font-family:var(--body);font-size:15px;line-height:1.5;color:var(--ink);background:var(--paper);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid #7fb8a6;outline-offset:2px;border-radius:4px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+h1,h2,h3{font-family:var(--display);margin:0;letter-spacing:-.01em}
+
+/* ---------- App shell ---------- */
+.app{display:grid;grid-template-columns:var(--sidebar) 1fr;min-height:100vh}
+.side{background:var(--ink);color:#dfe8e4;padding:22px 16px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:22px;overflow-y:auto}
+.logo{display:flex;align-items:center;gap:10px;padding:0 6px}
+.logo-mark{width:34px;height:34px;border-radius:9px;background:var(--brand-2);display:grid;place-items:center}
+.logo-mark svg{display:block}
+.logo-text{font-family:var(--display);font-weight:800;font-size:20px;color:#fff;letter-spacing:-.02em}
+.team-name{padding:0 6px;font-size:13px;color:#9fb1aa;line-height:1.35}
+.team-name b{display:block;color:#fff;font-weight:600;font-size:14px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:8px;color:#c4d2cc;text-decoration:none;font-weight:500}
+.nav a:hover{background:#ffffff10;color:#fff}
+.nav a[aria-current="page"]{background:#ffffff1a;color:#fff}
+.nav svg{width:18px;height:18px;flex:none;opacity:.9}
+.nav .count{margin-left:auto;background:var(--late);color:#fff;font-size:12px;font-weight:700;border-radius:20px;padding:0 7px;line-height:20px}
+.side-team{margin-top:auto;border-top:1px solid #ffffff1a;padding-top:16px}
+.side-team h3{font-family:var(--body);font-size:13px;font-weight:600;color:#9fb1aa;margin:0 6px 8px}
+.side-member{display:flex;align-items:center;gap:9px;padding:5px 6px;font-size:14px;color:#dfe8e4}
+.side-member .dot{width:9px;height:9px;border-radius:50%;flex:none}
+.side-member .st{margin-left:auto;width:8px;height:8px;border-radius:50%}
+
+.main{min-width:0;padding:30px 36px 60px}
+.page{max-width:1080px;margin:0 auto}
+.page[hidden]{display:none}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.page-head h1{font-size:30px;font-weight:700}
+.page-head p{margin:4px 0 0;color:var(--ink-2)}
+
+/* mobile top + bottom nav */
+.mtop,.mnav{display:none}
+
+/* ---------- Common bits ---------- */
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r-lg)}
+.panel-pad{padding:20px 22px}
+.panel h2{font-size:18px;font-weight:700}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 22px 12px}
+.muted{color:var(--ink-3)}
+.small{font-size:13px}
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid transparent;border-radius:9px;padding:9px 15px;font-weight:600;font-size:14px;background:var(--brand);color:#fff;white-space:nowrap}
+.btn:hover{background:#174d3f}
+.btn.secondary{background:var(--surface);color:var(--ink);border-color:var(--rule)}
+.btn.secondary:hover{background:var(--rule-2)}
+.btn.quiet{background:transparent;color:var(--brand);padding:6px 10px}
+.btn.quiet:hover{background:var(--brand-wash)}
+.btn.danger{background:var(--surface);color:var(--late);border-color:#f0caca}
+.btn.danger:hover{background:var(--late-wash)}
+.btn.sm{padding:6px 11px;font-size:13px}
+.btn svg{width:16px;height:16px}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.pill.late{background:var(--late-wash);color:var(--late)}
+.pill.risk{background:var(--risk-wash);color:var(--risk)}
+.pill.ok{background:var(--ok-wash);color:var(--ok)}
+.pill.idle{background:var(--idle-wash);color:var(--idle)}
+.pill.done{background:var(--ok-wash);color:var(--ok)}
+.code{font-family:var(--display);font-weight:700;font-size:12px;color:var(--brand);background:var(--brand-wash);border-radius:5px;padding:1px 6px;white-space:nowrap}
+.avatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;flex:none}
+.avatar.lg{width:42px;height:42px;font-size:16px}
+.meter{height:7px;border-radius:7px;background:var(--rule-2);overflow:hidden}
+.meter i{display:block;height:100%;border-radius:7px;background:var(--brand-2)}
+label.field{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.input,select.input,textarea.input{border:1px solid var(--rule);background:var(--surface);border-radius:9px;padding:9px 11px;font-size:14.5px;font-weight:400;color:var(--ink);width:100%}
+.input:focus{border-color:var(--brand-2);outline:none;box-shadow:0 0 0 3px #2f7a6426}
+textarea.input{resize:vertical;min-height:84px;line-height:1.45}
+input[type=range]{accent-color:var(--brand-2)}
+input[type=checkbox]{accent-color:var(--brand-2)}
+
+/* ---------- Overview: headline + engagement track ---------- */
+.hero{padding:6px 0 26px}
+.hero .date{color:var(--ink-3);font-size:14px;font-weight:500;margin-bottom:6px}
+.hero h1{font-size:clamp(30px,4.2vw,46px);line-height:1.08;font-weight:800;max-width:22ch;letter-spacing:-.025em}
+.hero h1 .late{color:var(--late)}
+.hero p{margin:12px 0 0;color:var(--ink-2);font-size:16.5px;max-width:60ch}
+
+.track{padding:4px 22px 22px;overflow-x:auto}
+.track-inner{position:relative;min-width:640px;display:grid;grid-template-columns:repeat(5,1fr);padding-top:40px}
+.track-line{position:absolute;left:10%;right:10%;top:67px;height:4px;border-radius:4px;background:var(--rule)}
+.track-fill{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:var(--brand-2);width:0;transition:width 1.1s cubic-bezier(.2,.7,.2,1)}
+.today{position:absolute;top:-50px;z-index:2;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;transition:left 1.1s cubic-bezier(.2,.7,.2,1);left:0}
+.today span{font-size:11.5px;font-weight:700;color:#fff;background:var(--ink);border-radius:5px;padding:1px 7px;white-space:nowrap}
+.today i{width:2px;height:32px;background:var(--ink)}
+.station{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:0 6px;background:none;border:none;color:inherit}
+.ring{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;position:relative;z-index:1}
+.ring::after{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--surface)}
+.ring b{position:relative;z-index:1;font-family:var(--display);font-size:14px;font-weight:700}
+.station.complete .ring::after{background:var(--brand)}
+.station.complete .ring b{color:#fff}
+.station .s-name{font-weight:600;font-size:14px;line-height:1.25}
+.station .s-date{font-size:12.5px;color:var(--ink-3)}
+.station:hover .s-name{text-decoration:underline}
+
+.split > *{min-width:0}
+.main{overflow-x:clip}
+.split{display:grid;grid-template-columns:1.35fr 1fr;gap:18px;margin-top:18px;align-items:start}
+.attn{list-style:none;margin:0;padding:0 10px 10px}
+.attn li{display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px}
+.attn li + li{border-top:1px solid var(--rule-2)}
+.attn .t{flex:1;min-width:0}
+.attn .t b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.attn .t span{font-size:13px;color:var(--ink-3)}
+.empty-note{padding:18px 22px 24px;color:var(--ink-2)}
+.empty-note b{color:var(--ok)}
+
+.standings{list-style:none;margin:0;padding:0 22px 14px}
+.standings li{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6px 12px;padding:11px 0}
+.standings li + li{border-top:1px solid var(--rule-2)}
+.standings .who b{display:block;font-weight:600;line-height:1.2}
+.standings .who span{font-size:12.5px;color:var(--ink-3)}
+.standings .meter{grid-column:2 / 4}
+.standings .frac{grid-column:2 / 4;font-size:12.5px;color:var(--ink-3);margin-top:-2px}
+
+.kpis{display:flex;gap:28px;flex-wrap:wrap;padding:16px 22px;border-top:1px solid var(--rule-2)}
+.kpis div{font-size:13px;color:var(--ink-3)}
+.kpis b{display:block;font-family:var(--display);font-size:24px;color:var(--ink);font-weight:700;line-height:1.1}
+
+/* ---------- Tasks ---------- */
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.toolbar .search{flex:1 1 220px;position:relative}
+.toolbar .search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--ink-3)}
+.toolbar .search input{padding-left:34px}
+.toolbar select{width:auto;flex:0 1 auto}
+.result-line{display:flex;justify-content:space-between;align-items:center;margin:0 2px 10px;font-size:13.5px;color:var(--ink-3)}
+.group{margin-bottom:16px;overflow:hidden}
+.group-head{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;list-style:none}
+.group-head::-webkit-details-marker{display:none}
+.group[open] > .group-head{border-bottom:1px solid var(--rule)}
+.chev{width:18px;height:18px;color:var(--ink-3);transition:transform .2s;flex:none}
+.group[open] .chev{transform:rotate(90deg)}
+.group-head h3{font-size:16px;font-weight:700}
+.group-head .due{font-size:13px;color:var(--ink-3)}
+.group-head .gm{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-2)}
+.group-head .gm .meter{width:90px}
+.trow{display:grid;grid-template-columns:28px minmax(0,1fr) 150px 108px 150px 118px;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--rule-2)}
+.trow:last-child{border-bottom:none}
+.trow:hover{background:#fafcfb}
+.trow .title{background:none;border:none;text-align:left;padding:2px 0;font-weight:500;color:var(--ink)}
+.trow .title:hover{color:var(--brand);text-decoration:underline}
+.trow.is-done .title{color:var(--ink-3);text-decoration:line-through}
+.trow .who{display:flex;align-items:center;gap:8px;font-size:14px}
+.trow .who .avatar{width:24px;height:24px;font-size:11px}
+.trow .due{font-size:13.5px;color:var(--ink-2)}
+.trow .prog{display:flex;align-items:center;gap:8px}
+.trow .prog input{width:100%}
+.trow .prog span{font-size:12.5px;color:var(--ink-3);width:34px;text-align:right}
+.trow input[type=checkbox]{width:18px;height:18px}
+.trow > .pill{justify-self:start}
+.no-results{padding:40px 20px;text-align:center;color:var(--ink-2)}
+
+/* ---------- Nudges ---------- */
+.nudge-list{list-style:none;margin:0;padding:0 10px 10px}
+.nudge-list li{padding:12px}
+.nudge-list li + li{border-top:1px solid var(--rule-2)}
+.nudge-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.nudge-top .t{flex:1;min-width:180px}
+.nudge-top .t b{display:block;font-weight:600}
+.nudge-top .t span{font-size:13px;color:var(--ink-3)}
+.stack{display:flex;flex-direction:column;gap:18px}
+
+/* ---------- Team ---------- */
+.members-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.mcard{padding:18px}
+.mcard-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.mcard-top .grow{flex:1;min-width:0}
+.mcard .fields{display:grid;grid-template-columns:1fr 1.5fr;gap:10px;margin-bottom:14px}
+.mcard .stats{display:flex;gap:18px;font-size:13px;color:var(--ink-3);margin-top:8px}
+.mcard .stats b{color:var(--ink);font-weight:600}
+.settings{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:22px}
+.radio{display:flex;align-items:center;gap:9px;font-size:14.5px;padding:6px 0}
+.radio input{accent-color:var(--brand-2);width:16px;height:16px}
+.settings .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+
+/* ---------- Drawer & modal ---------- */
+.scrim{position:fixed;inset:0;background:#0f1a1566;z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:var(--surface);z-index:50;transform:translateX(100%);visibility:hidden;transition:transform .25s cubic-bezier(.2,.7,.2,1),visibility 0s .25s;display:flex;flex-direction:column;box-shadow:-12px 0 40px #0f1a1522}
+.drawer.open{transform:none;visibility:visible;transition:transform .25s cubic-bezier(.2,.7,.2,1)}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:20px 22px;border-bottom:1px solid var(--rule)}
+.drawer-head h2{font-size:20px}
+.drawer-body{padding:20px 22px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;flex:1}
+.drawer-foot{padding:16px 22px;border-top:1px solid var(--rule);display:flex;gap:8px;justify-content:space-between;align-items:center}
+.drawer-foot .right{display:flex;gap:8px;margin-left:auto}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.icon-btn{background:none;border:none;padding:6px;border-radius:8px;color:var(--ink-2);display:grid;place-items:center}
+.icon-btn:hover{background:var(--rule-2)}
+.icon-btn svg{width:20px;height:20px}
+
+.modal{position:fixed;left:50%;top:50%;width:min(620px,calc(100% - 28px));max-height:calc(100vh - 40px);transform:translate(-50%,-46%);opacity:0;pointer-events:none;background:var(--surface);border-radius:var(--r-lg);z-index:50;transition:opacity .2s,transform .2s,visibility 0s .2s;visibility:hidden;display:flex;flex-direction:column;box-shadow:0 30px 80px #0f1a1533}
+.modal.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%);visibility:visible;transition:opacity .2s,transform .2s}
+.plan-list{list-style:none;margin:0;padding:0;border:1px solid var(--rule);border-radius:12px}
+.plan-list li{display:grid;grid-template-columns:22px auto 1fr;gap:12px;align-items:start;padding:12px 14px}
+.plan-list li + li{border-top:1px solid var(--rule-2)}
+.plan-list input[type=checkbox]{margin-top:5px;width:16px;height:16px}
+.plan-list .avatar{width:28px;height:28px;font-size:12px}
+.plan-list input.input{padding:6px 9px;font-size:14px}
+.plan-list .meta{font-size:12.5px;color:var(--ink-3);margin-top:4px}
+.notice{background:var(--risk-wash);color:#7a4a00;border-radius:10px;padding:10px 13px;font-size:13.5px}
+
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;font-size:14px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:60;max-width:calc(100% - 30px)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- Responsive ---------- */
+@media (max-width:1000px){
+  .split{grid-template-columns:1fr}
+  .trow{grid-template-columns:28px minmax(0,1fr) 130px 100px 118px;}
+  .trow .prog{display:none}
+}
+@media (max-width:760px){
+  .app{grid-template-columns:1fr}
+  .side{display:none}
+  .mtop{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--ink);color:#fff;position:sticky;top:0;z-index:20}
+  .mtop .logo-text{font-size:18px}
+  .mtop .team{margin-left:auto;font-size:12.5px;color:#9fb1aa;text-align:right;line-height:1.25}
+  .mnav{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--rule);z-index:30;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  .mnav a{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11.5px;font-weight:600;color:var(--ink-3);text-decoration:none;padding:5px 0;position:relative}
+  .mnav a[aria-current="page"]{color:var(--brand)}
+  .mnav svg{width:22px;height:22px}
+  .mnav .count{position:absolute;top:0;left:calc(50% + 6px);background:var(--late);color:#fff;font-size:10.5px;border-radius:10px;padding:0 5px;line-height:16px}
+  .main{padding:20px 14px 96px}
+  .page-head h1{font-size:25px}
+  .trow{grid-template-columns:26px minmax(0,1fr) auto;row-gap:4px}
+  .trow .who,.trow .due{grid-column:2 / 3;font-size:13px}
+  .trow .who{grid-row:2}
+  .trow .due{display:none}
+  .trow .pill{grid-column:3;grid-row:1 / 3}
+  .group-head{flex-wrap:wrap}
+  .group-head .gm{margin-left:0;width:100%}
+  .settings,.two-col,.mcard .fields{grid-template-columns:1fr}
+  .kpis{gap:20px}
+  .toast{bottom:90px}
+  .panel-head .hint{display:none}
+  .attn li{flex-wrap:wrap}
+  .attn .t{flex-basis:calc(100% - 46px)}
+  .attn .pill{margin-left:42px}
+  .attn .btn{margin-left:auto}
+  .standings li{grid-template-columns:auto 1fr auto}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- Icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h12M9 12h12M9 18h12"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1112 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 004 0"/></symbol>
+  <symbol id="i-team" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><circle cx="17.5" cy="9" r="2.5"/><path d="M17 14.5c2.4.2 4 1.8 4.6 4.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 00-1-1H5a1 1 0 00-1 1v10a1 1 0 001 1h3"/></symbol>
+  <symbol id="i-split" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h6"/><path d="M10 12l4-6h6M10 12l4 6h6"/><path d="M14 12h6"/></symbol>
+</svg>
+
+<div class="mtop">
+  <span class="logo-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></span>
+  <span class="logo-text">TeamTrack</span>
+  <span class="team" id="mTeam"></span>
+</div>
+
+<div class="app">
+  <aside class="side">
+    <div class="logo">
+      <span class="logo-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></span>
+      <span class="logo-text">TeamTrack</span>
+    </div>
+    <div class="team-name" id="sideTeam"></div>
+    <nav class="nav" aria-label="Main">
+      <a href="#overview" data-route="overview"><svg><use href="#i-home"/></svg>Overview</a>
+      <a href="#tasks" data-route="tasks"><svg><use href="#i-list"/></svg>Tasks</a>
+      <a href="#nudges" data-route="nudges"><svg><use href="#i-bell"/></svg>Reminders<span class="count" data-count hidden></span></a>
+      <a href="#team" data-route="team"><svg><use href="#i-team"/></svg>Team &amp; settings</a>
+    </nav>
+    <div class="side-team">
+      <h3>Junior associates</h3>
+      <div id="sideMembers"></div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- ================= OVERVIEW ================= -->
+    <section class="page" id="page-overview" aria-labelledby="ovHead">
+      <div class="hero">
+        <div class="date" id="ovDate"></div>
+        <h1 id="ovHead"></h1>
+        <p id="ovSub"></p>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>Project 1 deliverables</h2><span class="small muted hint">Select a deliverable to see its tasks</span></div>
+        <div class="track"><div class="track-inner" id="track"></div></div>
+        <div class="kpis" id="kpis"></div>
+      </div>
+
+      <div class="split">
+        <div class="panel">
+          <div class="panel-head"><h2>Needs attention</h2><a class="btn quiet sm" href="#nudges">All reminders</a></div>
+          <div id="attention"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>Who's on track</h2></div>
+          <ul class="standings" id="standings"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TASKS ================= -->
+    <section class="page" id="page-tasks" hidden aria-labelledby="tkHead">
+      <div class="page-head">
+        <div><h1 id="tkHead">Tasks</h1><p>Every task, grouped by deliverable. Select a task to edit it.</p></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn secondary" id="openPlan"><svg><use href="#i-split"/></svg>Split by major</button>
+          <button class="btn" id="openAdd"><svg><use href="#i-plus"/></svg>Add task</button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <div class="search"><svg><use href="#i-search"/></svg><label class="sr" for="fSearch">Search tasks</label><input class="input" id="fSearch" type="search" placeholder="Search tasks"></div>
+        <label class="sr" for="fMember">Team member</label><select class="input" id="fMember"></select>
+        <label class="sr" for="fDeliv">Deliverable</label><select class="input" id="fDeliv"></select>
+        <label class="sr" for="fStatus">Status</label>
+        <select class="input" id="fStatus">
+          <option value="all">Any status</option>
+          <option value="open">Not done</option>
+          <option value="late">Overdue</option>
+          <option value="risk">Due in 3 days</option>
+          <option value="done">Done</option>
+        </select>
+      </div>
+      <div class="result-line"><span id="resultCount"></span><button class="btn quiet sm" id="clearFilters" hidden>Clear filters</button></div>
+      <div id="taskGroups"></div>
+    </section>
+
+    <!-- ================= NUDGES ================= -->
+    <section class="page" id="page-nudges" hidden aria-labelledby="ndHead">
+      <div class="page-head">
+        <div><h1 id="ndHead">Reminders</h1><p>Write a reminder, copy it, and paste it in your Teams channel or group chat.</p></div>
+        <button class="btn" id="digestBtn"><svg><use href="#i-copy"/></svg>Copy team update</button>
+      </div>
+      <div class="stack" id="nudgeSections"></div>
+    </section>
+
+    <!-- ================= TEAM ================= -->
+    <section class="page" id="page-team" hidden aria-labelledby="tmHead">
+      <div class="page-head">
+        <div><h1 id="tmHead">Team &amp; settings</h1><p>Each member's major decides which tasks they get when you split a deliverable.</p></div>
+        <button class="btn" id="addMember"><svg><use href="#i-plus"/></svg>Add member</button>
+      </div>
+      <div class="members-grid" id="memberCards"></div>
+
+      <div class="settings">
+        <div class="panel panel-pad">
+          <h2 style="margin-bottom:12px">Team</h2>
+          <label class="field">Team name<input class="input" id="setTeamName"></label>
+        </div>
+        <div class="panel panel-pad">
+          <h2 style="margin-bottom:6px">Date</h2>
+          <p class="small muted" style="margin:0 0 8px">IBC Project 1 ran January to March 2026. A demo date lets you show deadlines as they'd look mid-project.</p>
+          <label class="radio"><input type="radio" name="dmode" value="demo" id="dmDemo"> Use a demo date</label>
+          <input class="input" type="date" id="setDemoDate" style="max-width:200px;margin-left:25px">
+          <label class="radio"><input type="radio" name="dmode" value="real" id="dmReal"> Use today's real date</label>
+        </div>
+        <div class="panel panel-pad" style="grid-column:1 / -1">
+          <h2 style="margin-bottom:6px">Data</h2>
+          <p class="small muted" style="margin:0">Changes save in this browser only. Each device keeps its own copy.</p>
+          <div class="row">
+            <button class="btn secondary" id="resetDemo">Reset demo data</button>
+            <button class="btn danger" id="startBlank">Start a blank project</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<nav class="mnav" aria-label="Main">
+  <a href="#overview" data-route="overview"><svg><use href="#i-home"/></svg>Overview</a>
+  <a href="#tasks" data-route="tasks"><svg><use href="#i-list"/></svg>Tasks</a>
+  <a href="#nudges" data-route="nudges"><svg><use href="#i-bell"/></svg>Reminders<span class="count" data-count hidden></span></a>
+  <a href="#team" data-route="team"><svg><use href="#i-team"/></svg>Team</a>
+</nav>
+
+<!-- Task drawer -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+  <div class="drawer-head"><h2 id="drawerTitle">Edit task</h2><button class="icon-btn" data-close aria-label="Close"><svg><use href="#i-x"/></svg></button></div>
+  <form class="drawer-body" id="taskForm">
+    <label class="field">Task<input class="input" id="dTitle" required placeholder="e.g. Draft the competitor section"></label>
+    <label class="field">Deliverable<select class="input" id="dDeliv"></select></label>
+    <div class="two-col">
+      <label class="field">Assigned to<select class="input" id="dAssignee"></select></label>
+      <label class="field">Due date<input class="input" type="date" id="dDue" required></label>
+    </div>
+    <label class="field"><span style="display:flex;justify-content:space-between">Progress<span id="dProgLbl" style="color:var(--ink)"></span></span><input type="range" min="0" max="100" step="10" id="dProg"></label>
+    <label class="field">Notes<textarea class="input" id="dNotes" placeholder="Sources, links, or what's left to do"></textarea></label>
+  </form>
+  <div class="drawer-foot">
+    <button class="btn danger" id="dDelete" type="button">Delete task</button>
+    <div class="right">
+      <button class="btn secondary" data-close type="button">Cancel</button>
+      <button class="btn" id="dSave" type="submit" form="taskForm">Save changes</button>
+    </div>
+  </div>
+</aside>
+
+<!-- Split-by-major modal -->
+<div class="modal" id="planModal" role="dialog" aria-modal="true" aria-labelledby="planTitle">
+  <div class="drawer-head"><h2 id="planTitle">Split a deliverable by major</h2><button class="icon-btn" data-close aria-label="Close"><svg><use href="#i-x"/></svg></button></div>
+  <div class="drawer-body">
+    <p class="small muted" style="margin:0">Pick a deliverable. TeamTrack suggests one task per member based on their major, with due dates before the Senior Partner deadline. Edit anything before adding.</p>
+    <label class="field">Deliverable<select class="input" id="planDeliv"></select></label>
+    <div id="planNotice"></div>
+    <ul class="plan-list" id="planList"></ul>
+  </div>
+  <div class="drawer-foot">
+    <span class="small muted" id="planCount"></span>
+    <div class="right">
+      <button class="btn secondary" data-close type="button">Cancel</button>
+      <button class="btn" id="planAdd" type="button">Add tasks</button>
+    </div>
+  </div>
+</div>
+
+<!-- Message modal -->
+<div class="modal" id="msgModal" role="dialog" aria-modal="true" aria-labelledby="msgTitle">
+  <div class="drawer-head"><h2 id="msgTitle">Reminder</h2><button class="icon-btn" data-close aria-label="Close"><svg><use href="#i-x"/></svg></button></div>
+  <div class="drawer-body">
+    <label class="field">Message<textarea class="input" id="msgText" style="min-height:170px"></textarea></label>
+    <p class="small muted" style="margin:0">Edit the message if you like, then copy it.</p>
+  </div>
+  <div class="drawer-foot">
+    <div class="right">
+      <button class="btn secondary" data-close type="button">Close</button>
+      <button class="btn" id="msgCopy" type="button"><svg><use href="#i-copy"/></svg>Copy message</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* =====================================================================
+   TeamTrack: group project tracker for IBC (Copeland Associates) teams
+   ===================================================================== */
+
+const STORE_KEY = 'teamtrack-final-v1';
+const DAY = 86400000;
+
+const ROLES = {
+  'Management':               {color:'#4b4fc4', short:'MGT'},
+  'Finance':                  {color:'#13867a', short:'FIN'},
+  'Marketing':                {color:'#c0397b', short:'MKT'},
+  'Analytics & Info Systems': {color:'#2d8fbf', short:'AIS'},
+  'Business Communication':   {color:'#8a55b8', short:'BCOM'},
+  'Other':                    {color:'#6b7280', short:'OTH'}
+};
+
+const DELIVERABLES = [
+  {code:'P1D2', name:'Industry Research Worksheet', due:'2026-01-15'},
+  {code:'P1D3', name:'Progress Report #1',          due:'2026-01-26'},
+  {code:'P1D4', name:'Progress Report #2',          due:'2026-02-06'},
+  {code:'P1D5', name:'Final Report',                due:'2026-02-20'},
+  {code:'P1D6', name:'Final Presentation',          due:'2026-02-26'}
+];
+
+/* Senior Partner deadlines from the Project 1 charge */
+const MILESTONES = [
+  {date:'2026-01-15', deliv:'P1D2', title:'Industry Research Worksheet due'},
+  {date:'2026-01-25', deliv:'P1D3', title:'Progress Report #1 due'},
+  {date:'2026-01-26', deliv:'P1D3', title:'Progress Meeting #1 and Action Plan Memo #1'},
+  {date:'2026-02-05', deliv:'P1D4', title:'Progress Report #2 due'},
+  {date:'2026-02-06', deliv:'P1D4', title:'Progress Meeting #2 and Action Plan Memo #2'},
+  {date:'2026-02-06', deliv:'P1D4', title:'Feedback Loop #2 peer evaluation (everyone)'},
+  {date:'2026-02-20', deliv:'P1D5', title:'Final Report due'},
+  {date:'2026-02-25', deliv:'P1D6', title:'Final Presentation Deck due'},
+  {date:'2026-02-26', deliv:'P1D6', title:'Final Presentation (business professional)'},
+  {date:'2026-02-27', deliv:'P1D6', title:'Feedback Loop #3 peer evaluation (everyone)'},
+  {date:'2026-03-05', deliv:'P1D6', title:'Feedback Meeting'}
+];
+
+/* Task templates by major, per deliverable. offset = days before the deliverable's due date */
+const TEMPLATES = {
+  P1D2:{
+    'Management':['Labor market and supplier research',1],
+    'Finance':['Economic environment: industry revenue and growth',1],
+    'Marketing':['Customer section: who buys and why',1],
+    'Analytics & Info Systems':['Technology environment and industry data sources',1],
+    'Business Communication':['Compile the worksheet and cite all sources',0],
+    'Other':['Legal, political and international environment',1]
+  },
+  P1D3:{
+    'Management':['Competitor strengths, weaknesses and values',3],
+    'Finance':['Dominant economic features and competitor financials',3],
+    'Marketing':['Competitor value propositions and customer outreach',3],
+    'Analytics & Info Systems':['Supply chain and technology trends',3],
+    'Business Communication':['Write Progress Report #1 and Action Plan Memo #1',0],
+    'Other':['Industry definition and outlook',3]
+  },
+  P1D4:{
+    'Management':['Progress Meeting #2 agenda and team questions',2],
+    'Finance':['Consumer spending and price sensitivity data',3],
+    'Marketing':['Demographic and psychographic profiles by segment',3],
+    'Analytics & Info Systems':['Analyze consumer survey and trend data',3],
+    'Business Communication':['Write Progress Report #2 and Action Plan Memo #2',0],
+    'Other':['Consumer problems, wants and needs list',3]
+  },
+  P1D5:{
+    'Management':['Opportunities for innovation and justification',3],
+    'Finance':['Industry financial outlook and market size',4],
+    'Marketing':['Consumer problems and unmet needs section',3],
+    'Analytics & Info Systems':['Charts, graphs and data visuals',2],
+    'Business Communication':['Edit to BCOM guidelines and check citations',1],
+    'Other':['Executive summary',2]
+  },
+  P1D6:{
+    'Management':['Presentation flow and speaker assignments',3],
+    'Finance':['Financial outlook slides',2],
+    'Marketing':['Consumer and opportunity slides',2],
+    'Analytics & Info Systems':['Data visual slides',2],
+    'Business Communication':['Deck design and rehearsal run-through',1],
+    'Other':['Prepare answers for Senior Partner Q&A',1]
+  }
+};
+
+/* ---------- Demo data ---------- */
+function demoState(){
+  const members = [
+    {id:'m1', name:'Kaylee', role:'Management'},
+    {id:'m2', name:'Tom',    role:'Finance'},
+    {id:'m3', name:'Olivia', role:'Marketing'},
+    {id:'m4', name:'John',   role:'Analytics & Info Systems'},
+    {id:'m5', name:'Chloe',  role:'Business Communication'}
+  ];
+  // progress by deliverable for each member: m1..m5
+  const progress = {
+    P1D2:[100,100,100,100,100],
+    P1D3:[100,100,100,100,100],
+    P1D4:[100,100,100,100,100],
+    P1D5:[100, 80,100, 60, 30],
+    P1D6:[ 20,  0,  0,  0,  0]
+  };
+  const notes = {
+    'P1D5-m2':'Waiting on IBISWorld revenue figures. Market size estimate is drafted.',
+    'P1D5-m5':'Need everyone\'s sections by Wednesday night to edit in time.'
+  };
+  const tasks = [];
+  let n = 1;
+  DELIVERABLES.forEach(d=>{
+    members.forEach((m,i)=>{
+      const [title, offset] = TEMPLATES[d.code][m.role];
+      tasks.push({id:'t'+(n++), deliv:d.code, title, assignee:m.id, due:addDays(d.due,-offset), progress:progress[d.code][i], notes:notes[d.code+'-'+m.id]||''});
+    });
+  });
+  return {
+    team:'Copeland Associates, Team 3',
+    dateMode:'demo',
+    demoDate:'2026-02-18',
+    members, tasks
+  };
+}
+
+/* ---------- State ---------- */
+let S;
+function load(){
+  try{ const raw = localStorage.getItem(STORE_KEY); if(raw){ S = JSON.parse(raw); return; } }catch(e){}
+  S = demoState();
+}
+function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)); }catch(e){} }
+const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+
+/* ---------- Dates ---------- */
+function isoLocal(d){ const z=new Date(d); z.setMinutes(z.getMinutes()-z.getTimezoneOffset()); return z.toISOString().slice(0,10); }
+function today(){ return S.dateMode==='demo' && S.demoDate ? S.demoDate : isoLocal(new Date()); }
+function addDays(s,n){ const d=new Date(s+'T12:00:00'); d.setDate(d.getDate()+n); return isoLocal(d); }
+function daysUntil(s){ return Math.round((new Date(s+'T12:00:00') - new Date(today()+'T12:00:00'))/DAY); }
+const fmt = (s,o) => new Date(s+'T12:00:00').toLocaleDateString('en-US', o || {weekday:'short', month:'short', day:'numeric'});
+const fmtLong = s => fmt(s,{weekday:'long', month:'long', day:'numeric', year:'numeric'});
+function relDay(n){ return n===0?'today':n===1?'tomorrow':n===-1?'yesterday':n>0?`in ${n} days`:`${-n} days ago`; }
+
+/* ---------- Helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const member = id => S.members.find(m=>m.id===id);
+const nameOf = id => (member(id)||{name:'Unassigned'}).name;
+const roleOf = id => (member(id)||{role:'Other'}).role;
+const colorOf = id => (ROLES[roleOf(id)]||ROLES.Other).color;
+const deliv = code => DELIVERABLES.find(d=>d.code===code) || {code, name:code, due:today()};
+const initials = n => (n||'?').trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+function avatar(id, cls=''){ return `<span class="avatar ${cls}" style="background:${colorOf(id)}" aria-hidden="true">${esc(initials(nameOf(id)))}</span>`; }
+
+function status(t){
+  if(t.progress>=100) return {key:'done', label:'Done', cls:'done'};
+  const d = daysUntil(t.due);
+  if(d<0)  return {key:'late', label:`Overdue ${-d}d`, cls:'late'};
+  if(d<=3) return {key:'risk', label: d===0?'Due today':`Due in ${d}d`, cls:'risk'};
+  return {key:'open', label: t.progress>0?'In progress':'Not started', cls:'idle'};
+}
+function standing(m){
+  const mine = S.tasks.filter(t=>t.assignee===m.id);
+  const done = mine.filter(t=>t.progress>=100).length;
+  const avg  = mine.length ? Math.round(mine.reduce((a,t)=>a+t.progress,0)/mine.length) : 0;
+  const late = mine.filter(t=>status(t).key==='late');
+  const risk = mine.filter(t=>status(t).key==='risk' && t.progress<50);
+  let s = {label:'On track', cls:'ok', dot:'#3fbf7f'};
+  if(!mine.length) s = {label:'No tasks', cls:'idle', dot:'#8a97b8'};
+  else if(late.length) s = {label:'Falling behind', cls:'late', dot:'#e05a5a'};
+  else if(risk.length) s = {label:'At risk', cls:'risk', dot:'#e0a030'};
+  return {mine, done, avg, late, risk, ...s};
+}
+function needsAttention(){
+  return S.tasks.filter(t=>{ const k=status(t).key; return k==='late' || (k==='risk' && t.progress<50); })
+    .sort((a,b)=>a.due.localeCompare(b.due));
+}
+function delivStats(code){
+  const ts = S.tasks.filter(t=>t.deliv===code);
+  const done = ts.filter(t=>t.progress>=100).length;
+  const pct = ts.length ? Math.round(ts.reduce((a,t)=>a+t.progress,0)/ts.length) : 0;
+  return {ts, done, pct};
+}
+
+/* ---------- Toast & clipboard ---------- */
+function toast(msg){ const el=$('#toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove('show'),2300); }
+async function copyText(text, okMsg){
+  try{ await navigator.clipboard.writeText(text); toast(okMsg); return; }catch(e){}
+  try{
+    const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select(); const ok=document.execCommand('copy'); ta.remove();
+    toast(ok?okMsg:'Select the message and copy it with Ctrl+C or Cmd+C');
+  }catch(e){ toast('Select the message and copy it with Ctrl+C or Cmd+C'); }
+}
+
+/* =====================================================================
+   RENDER
+   ===================================================================== */
+function renderAll(){
+  renderChrome(); renderOverview(); renderTasks(); renderNudges(); renderTeam();
+}
+
+function renderChrome(){
+  const label = S.dateMode==='demo' ? 'Demo date' : 'Today';
+  $('#sideTeam').innerHTML = `<b>${esc(S.team||'My IBC team')}</b>IBC Project 1`;
+  $('#mTeam').innerHTML = `${esc(S.team||'My IBC team')}<br>${label}: ${fmt(today())}`;
+  $('#sideMembers').innerHTML = S.members.map(m=>{
+    const s = standing(m);
+    return `<div class="side-member"><span class="dot" style="background:${ROLES[m.role]?.color||ROLES.Other.color}"></span>${esc(m.name)}<span class="st" style="background:${s.dot}" title="${s.label}"></span></div>`;
+  }).join('') || '<div class="side-member" style="color:#9fb1aa">No members yet</div>';
+  const n = needsAttention().length;
+  document.querySelectorAll('[data-count]').forEach(el=>{ el.hidden=!n; el.textContent=n; });
+}
+
+/* ---------- Overview ---------- */
+function renderOverview(){
+  const t = today();
+  $('#ovDate').textContent = (S.dateMode==='demo' ? 'Demo date: ' : '') + fmtLong(t);
+
+  const late = S.tasks.filter(x=>status(x).key==='late');
+  const nextMs = MILESTONES.find(m=>daysUntil(m.date)>=0);
+  let head, sub;
+  if(!S.tasks.length){
+    head = 'Add your team and split your first deliverable.';
+    sub = 'Go to Team & settings to add members, then use Split by major on the Tasks page.';
+  } else if(late.length){
+    const people = [...new Set(late.map(x=>nameOf(x.assignee)))];
+    head = `<span class="late">${late.length} ${late.length===1?'task is':'tasks are'} overdue</span>${nextMs?` and the ${esc(nextMs.title.replace(/ due$/,''))} is due ${relDay(daysUntil(nextMs.date))}.`:'.'}`;
+    sub = `${people.join(' and ')} ${people.length>1?'need':'needs'} a check-in. Everyone else's work is moving.`;
+  } else if(nextMs){
+    head = `Nothing is overdue. The ${esc(nextMs.title.replace(/ due$/,''))} is due ${relDay(daysUntil(nextMs.date))}.`;
+    sub = 'Keep progress updated so the team lead can see where things stand.';
+  } else {
+    head = 'Project 1 is complete.';
+    sub = 'Every Senior Partner deadline has passed.';
+  }
+  $('#ovHead').innerHTML = head;
+  $('#ovSub').textContent = sub;
+
+  // Engagement track
+  const n = DELIVERABLES.length;
+  const stations = DELIVERABLES.map(d=>{
+    const st = delivStats(d.code);
+    const complete = st.ts.length && st.done===st.ts.length;
+    const ring = `conic-gradient(var(--brand-2) ${st.pct*3.6}deg, var(--rule) 0)`;
+    return `<button class="station ${complete?'complete':''}" data-goto-deliv="${d.code}" aria-label="${d.code} ${esc(d.name)}, ${st.pct}% complete, due ${fmt(d.due)}">
+      <span class="ring" style="background:${ring}"><b>${complete?'✓':st.pct+'%'}</b></span>
+      <span><span class="code">${d.code}</span></span>
+      <span class="s-name">${esc(d.name)}</span>
+      <span class="s-date">Due ${fmt(d.due,{month:'short',day:'numeric'})}</span>
+    </button>`;
+  }).join('');
+  // today position: interpolate between stations (centers at (i+0.5)/n)
+  const dates = DELIVERABLES.map(d=>new Date(d.due+'T12:00:00').getTime());
+  const now = new Date(t+'T12:00:00').getTime();
+  let pos; // fraction along the line (0..1 between first and last station)
+  if(now<=dates[0]) pos = 0;
+  else if(now>=dates[n-1]) pos = 1;
+  else { for(let i=0;i<n-1;i++){ if(now>=dates[i] && now<=dates[i+1]){ pos=(i + (now-dates[i])/(dates[i+1]-dates[i]))/(n-1); break; } } }
+  $('#track').innerHTML = `<div class="track-line"><div class="track-fill" id="trackFill"></div><div class="today" id="todayMark"><span>${S.dateMode==='demo'?'Demo date':'Today'}</span><i></i></div></div>${stations}`;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    $('#trackFill').style.width = (pos*100)+'%';
+    $('#todayMark').style.left = (pos*100)+'%';
+  }));
+
+  // KPIs
+  const total = S.tasks.length, done = S.tasks.filter(x=>x.progress>=100).length;
+  const pct = total ? Math.round(S.tasks.reduce((a,x)=>a+x.progress,0)/total) : 0;
+  const soon = S.tasks.filter(x=>status(x).key==='risk').length;
+  $('#kpis').innerHTML = `
+    <div><b>${done} of ${total}</b>tasks done</div>
+    <div><b>${pct}%</b>overall progress</div>
+    <div><b style="color:${late.length?'var(--late)':'inherit'}">${late.length}</b>overdue</div>
+    <div><b>${soon}</b>due in the next 3 days</div>`;
+
+  // Needs attention
+  const att = needsAttention();
+  $('#attention').innerHTML = att.length ? `<ul class="attn">${att.map(x=>{
+    const st = status(x);
+    return `<li>${avatar(x.assignee)}
+      <div class="t"><b>${esc(x.title)}</b><span><span class="code">${x.deliv}</span> ${esc(nameOf(x.assignee))}, ${x.progress}% done</span></div>
+      <span class="pill ${st.cls}">${st.label}</span>
+      <button class="btn secondary sm" data-nudge="${x.id}">Remind</button></li>`;
+  }).join('')}</ul>` : `<div class="empty-note"><b>All clear.</b> Nothing is overdue, and nothing due in the next 3 days is less than half done.</div>`;
+
+  // Standings
+  $('#standings').innerHTML = S.members.map(m=>{
+    const s = standing(m);
+    return `<li>${avatar(m.id)}
+      <div class="who"><b>${esc(m.name)}</b><span>${esc(m.role)}</span></div>
+      <span class="pill ${s.cls}">${s.label}</span>
+      <div class="meter" role="img" aria-label="${s.avg}% average progress"><i style="width:${s.avg}%"></i></div>
+      <div class="frac">${s.done} of ${s.mine.length} tasks done</div></li>`;
+  }).join('') || '<li class="muted">Add team members on the Team &amp; settings page.</li>';
+}
+
+/* ---------- Tasks ---------- */
+function fillSelect(sel, opts, keep){
+  const v = sel.value; sel.innerHTML = opts; if(keep && [...sel.options].some(o=>o.value===v)) sel.value = v;
+}
+function renderTasks(){
+  fillSelect($('#fMember'), '<option value="all">Everyone</option>' + S.members.map(m=>`<option value="${m.id}">${esc(m.name)} (${esc(m.role)})</option>`).join(''), true);
+  fillSelect($('#fDeliv'), '<option value="all">All deliverables</option>' + DELIVERABLES.map(d=>`<option value="${d.code}">${d.code}: ${esc(d.name)}</option>`).join(''), true);
+
+  const q = $('#fSearch').value.trim().toLowerCase();
+  const fm = $('#fMember').value, fd = $('#fDeliv').value, fs = $('#fStatus').value;
+  const match = x => (fm==='all'||x.assignee===fm) && (fd==='all'||x.deliv===fd) &&
+    (fs==='all' || (fs==='open' ? x.progress<100 : status(x).key===fs)) &&
+    (!q || x.title.toLowerCase().includes(q) || (x.notes||'').toLowerCase().includes(q) || nameOf(x.assignee).toLowerCase().includes(q));
+  const shown = S.tasks.filter(match);
+  const filtered = q || fm!=='all' || fd!=='all' || fs!=='all';
+  $('#resultCount').textContent = filtered ? `Showing ${shown.length} of ${S.tasks.length} tasks` : `${S.tasks.length} tasks`;
+  $('#clearFilters').hidden = !filtered;
+
+  if(!S.tasks.length){
+    $('#taskGroups').innerHTML = `<div class="panel no-results"><p style="margin:0 0 12px">No tasks yet. Split a deliverable to give each member a task for their major.</p><button class="btn" data-open-plan>Split by major</button></div>`;
+    return;
+  }
+  if(!shown.length){
+    $('#taskGroups').innerHTML = `<div class="panel no-results"><p style="margin:0 0 12px">No tasks match these filters.</p><button class="btn secondary" data-clear-filters>Clear filters</button></div>`;
+    return;
+  }
+  const codes = [...DELIVERABLES.map(d=>d.code), ...new Set(S.tasks.map(t=>t.deliv).filter(c=>!DELIVERABLES.some(d=>d.code===c)))];
+  $('#taskGroups').innerHTML = codes.map(code=>{
+    const rows = shown.filter(x=>x.deliv===code).sort((a,b)=>a.due.localeCompare(b.due)||nameOf(a.assignee).localeCompare(nameOf(b.assignee)));
+    if(!rows.length) return '';
+    const d = deliv(code), st = delivStats(code);
+    const open = code in groupOpen ? groupOpen[code] : (filtered || st.done < st.ts.length);
+    return `<details class="panel group" data-group="${code}" ${open?'open':''}>
+      <summary class="group-head"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg><span class="code">${code}</span><h3>${esc(d.name)}</h3><span class="due">Due ${fmt(d.due)}</span>
+        <div class="gm"><span>${st.done===st.ts.length?'All '+st.ts.length+' done':st.done+' of '+st.ts.length+' done'}</span><div class="meter"><i style="width:${st.pct}%"></i></div></div></summary>
+      ${rows.map(x=>{
+        const s = status(x);
+        return `<div class="trow ${x.progress>=100?'is-done':''}">
+          <input type="checkbox" ${x.progress>=100?'checked':''} data-toggle="${x.id}" aria-label="Mark ${esc(x.title)} done">
+          <button class="title" data-edit="${x.id}">${esc(x.title)}</button>
+          <span class="who">${avatar(x.assignee)}${esc(nameOf(x.assignee))}</span>
+          <span class="due">${fmt(x.due)}</span>
+          <span class="prog"><input type="range" min="0" max="100" step="10" value="${x.progress}" data-prog="${x.id}" aria-label="Progress for ${esc(x.title)}"><span>${x.progress}%</span></span>
+          <span class="pill ${s.cls}">${s.label}</span>
+        </div>`;
+      }).join('')}
+    </details>`;
+  }).join('');
+}
+const groupOpen = {};
+document.addEventListener('toggle', e=>{ const c = e.target.dataset && e.target.dataset.group; if(c) groupOpen[c] = e.target.open; }, true);
+
+/* ---------- Nudges ---------- */
+function taskMessage(x){
+  const s = status(x), d = deliv(x.deliv), n = daysUntil(x.due);
+  const when = s.key==='late' ? `was due ${fmt(x.due)}, so it's ${-n} day${n===-1?'':'s'} overdue` : `is due ${n===0?'today':n===1?'tomorrow':fmt(x.due)}`;
+  return `Hi ${nameOf(x.assignee)}! Quick check-in on your ${d.name} task, "${x.title}". It ${when} and is at ${x.progress}% right now. ` +
+    `The ${d.name} is due to the Senior Partners on ${fmt(d.due)}. Let us know if you're stuck or need someone to help.`;
+}
+function msMessage(m){
+  const n = daysUntil(m.date);
+  return `Team reminder: ${m.title}, ${n===0?'today':n===1?'tomorrow':fmt(m.date)}. ` +
+    (/everyone/.test(m.title) ? 'Everyone needs to submit their own, and it counts toward our Teamwork Effectiveness grades.' : 'Make sure your part is finished and uploaded before then.');
+}
+function digest(){
+  const t = today();
+  const late = S.tasks.filter(x=>status(x).key==='late');
+  const soon = S.tasks.filter(x=>status(x).key==='risk');
+  const pct = S.tasks.length ? Math.round(S.tasks.reduce((a,x)=>a+x.progress,0)/S.tasks.length) : 0;
+  const line = x => `- ${nameOf(x.assignee)}: ${x.title} (${x.deliv}), due ${fmt(x.due)}, ${x.progress}% done`;
+  const next = MILESTONES.filter(m=>daysUntil(m.date)>=0).slice(0,3);
+  return [
+    `${S.team||'Team'} update for ${fmt(t,{weekday:'long',month:'long',day:'numeric'})}`,
+    `Overall progress: ${pct}%`,
+    '',
+    late.length ? 'Overdue:\n' + late.map(line).join('\n') : 'Overdue: nothing',
+    '',
+    soon.length ? 'Due in the next 3 days:\n' + soon.map(line).join('\n') : 'Due in the next 3 days: nothing',
+    '',
+    next.length ? 'Coming up:\n' + next.map(m=>`- ${fmt(m.date)}: ${m.title}`).join('\n') : ''
+  ].join('\n').trim();
+}
+function renderNudges(){
+  const open = S.tasks.filter(x=>x.progress<100).sort((a,b)=>a.due.localeCompare(b.due));
+  const late = open.filter(x=>status(x).key==='late');
+  const soon = open.filter(x=>status(x).key==='risk');
+  const ms = MILESTONES.filter(m=>{ const n=daysUntil(m.date); return n>=0 && n<=7; });
+  const item = x => {
+    const s = status(x);
+    return `<li><div class="nudge-top">${avatar(x.assignee)}
+      <div class="t"><b>${esc(x.title)}</b><span><span class="code">${x.deliv}</span> ${esc(nameOf(x.assignee))}, due ${fmt(x.due)}, ${x.progress}% done</span></div>
+      <span class="pill ${s.cls}">${s.label}</span><button class="btn sm" data-nudge="${x.id}">Write reminder</button></div></li>`;
+  };
+  const section = (title, sub, body, empty) => `<div class="panel"><div class="panel-head"><div><h2>${title}</h2><div class="small muted">${sub}</div></div></div>${body || `<div class="empty-note">${empty}</div>`}</div>`;
+  $('#nudgeSections').innerHTML =
+    section('Overdue tasks', 'Past their due date and not finished', late.length?`<ul class="nudge-list">${late.map(item).join('')}</ul>`:'', 'Nothing is overdue.') +
+    section('Due in the next 3 days', 'Not finished yet', soon.length?`<ul class="nudge-list">${soon.map(item).join('')}</ul>`:'', 'No task deadlines in the next 3 days.') +
+    section('Senior Partner deadlines this week', 'From the Project 1 charge', ms.length?`<ul class="nudge-list">${ms.map(m=>{
+      const n = daysUntil(m.date);
+      return `<li><div class="nudge-top"><div class="t"><b>${esc(m.title)}</b><span><span class="code">${m.deliv}</span> ${fmt(m.date)}</span></div>
+        <span class="pill ${n<=3?'risk':'idle'}">${n===0?'Today':n===1?'Tomorrow':'In '+n+' days'}</span>
+        <button class="btn sm" data-msnudge="${MILESTONES.indexOf(m)}">Write reminder</button></div></li>`;
+    }).join('')}</ul>`:'', 'No Senior Partner deadlines in the next 7 days.');
+}
+
+/* ---------- Team ---------- */
+function renderTeam(){
+  const roleOpts = r => Object.keys(ROLES).map(k=>`<option ${k===r?'selected':''}>${esc(k)}</option>`).join('');
+  $('#memberCards').innerHTML = S.members.map(m=>{
+    const s = standing(m);
+    return `<div class="panel mcard">
+      <div class="mcard-top">${avatar(m.id,'lg')}<div class="grow"><h3 style="font-size:18px">${esc(m.name)}</h3><span class="small muted">${esc(m.role)}</span></div><span class="pill ${s.cls}">${s.label}</span></div>
+      <div class="fields">
+        <label class="field">Name<input class="input" value="${esc(m.name)}" data-mname="${m.id}"></label>
+        <label class="field">Major<select class="input" data-mrole="${m.id}">${roleOpts(m.role)}</select></label>
+      </div>
+      <div class="meter"><i style="width:${s.avg}%"></i></div>
+      <div class="stats"><span><b>${s.done}</b> of ${s.mine.length} done</span><span><b>${s.mine.filter(x=>x.progress<100).length}</b> open</span><span><b>${s.late.length}</b> overdue</span></div>
+      <div style="margin-top:14px;display:flex;justify-content:flex-end"><button class="btn danger sm" data-mremove="${m.id}">Remove ${esc(m.name)}</button></div>
+    </div>`;
+  }).join('') || `<div class="panel no-results">No team members yet. Add each person and their major.</div>`;
+
+  $('#setTeamName').value = S.team || '';
+  $('#dmDemo').checked = S.dateMode==='demo';
+  $('#dmReal').checked = S.dateMode!=='demo';
+  $('#setDemoDate').value = S.demoDate || '2026-02-18';
+  $('#setDemoDate').disabled = S.dateMode!=='demo';
+}
+
+/* =====================================================================
+   ROUTING
+   ===================================================================== */
+const ROUTES = ['overview','tasks','nudges','team'];
+function route(){
+  closeOverlay();
+  const r = ROUTES.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'overview';
+  ROUTES.forEach(x=>$('#page-'+x).hidden = x!==r);
+  document.querySelectorAll('[data-route]').forEach(a=>{ if(a.dataset.route===r) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
+  if(r==='overview') renderOverview();
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange', route);
+
+/* =====================================================================
+   OVERLAYS
+   ===================================================================== */
+let openEl = null, lastFocus = null;
+function openOverlay(el){
+  lastFocus = document.activeElement;
+  openEl = el; el.classList.add('open'); $('#scrim').classList.add('open');
+  setTimeout(()=>{ const f = el.querySelector('input:not([type=checkbox]),select,textarea,button'); f && f.focus(); }, 60);
+}
+function closeOverlay(){
+  if(!openEl) return;
+  openEl.classList.remove('open'); $('#scrim').classList.remove('open'); openEl = null;
+  lastFocus && lastFocus.focus && lastFocus.focus();
+}
+$('#scrim').addEventListener('click', closeOverlay);
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeOverlay(); });
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click', closeOverlay));
+
+/* ---------- Task drawer ---------- */
+let editingId = null;
+function openTask(id){
+  editingId = id;
+  const x = id ? S.tasks.find(t=>t.id===id) : {title:'', deliv: nextOpenDeliv(), assignee: S.members[0]?.id, due: addDays(today(),7), progress:0, notes:''};
+  if(!S.members.length){ toast('Add a team member first'); location.hash='#team'; return; }
+  $('#drawerTitle').textContent = id ? 'Edit task' : 'Add a task';
+  $('#dSave').textContent = id ? 'Save changes' : 'Add task';
+  $('#dDelete').style.visibility = id ? 'visible' : 'hidden';
+  $('#dDeliv').innerHTML = DELIVERABLES.map(d=>`<option value="${d.code}">${d.code}: ${esc(d.name)}</option>`).join('');
+  $('#dAssignee').innerHTML = S.members.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('');
+  $('#dTitle').value = x.title; $('#dDeliv').value = x.deliv; $('#dAssignee').value = x.assignee;
+  $('#dDue').value = x.due; $('#dProg').value = x.progress; $('#dProgLbl').textContent = x.progress+'%';
+  $('#dNotes').value = x.notes || '';
+  $('#dDelete').textContent = 'Delete task'; $('#dDelete').dataset.armed = '';
+  openOverlay($('#drawer'));
+}
+function nextOpenDeliv(){ return (DELIVERABLES.find(d=>daysUntil(d.due)>=0) || DELIVERABLES[DELIVERABLES.length-1]).code; }
+$('#dProg').addEventListener('input', e=>$('#dProgLbl').textContent = e.target.value+'%');
+$('#taskForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const data = {title:$('#dTitle').value.trim(), deliv:$('#dDeliv').value, assignee:$('#dAssignee').value, due:$('#dDue').value, progress:+$('#dProg').value, notes:$('#dNotes').value.trim()};
+  if(!data.title){ $('#dTitle').focus(); return; }
+  if(editingId){ Object.assign(S.tasks.find(t=>t.id===editingId), data); toast('Changes saved'); }
+  else { S.tasks.push({id:uid('t'), ...data}); toast(`Task added for ${nameOf(data.assignee)}`); }
+  save(); closeOverlay(); renderAll();
+});
+$('#dDelete').addEventListener('click', e=>{
+  const b = e.currentTarget;
+  if(!b.dataset.armed){ b.dataset.armed='1'; b.textContent='Select again to delete'; return; }
+  S.tasks = S.tasks.filter(t=>t.id!==editingId); save(); closeOverlay(); renderAll(); toast('Task deleted');
+});
+$('#openAdd').addEventListener('click', ()=>openTask(null));
+
+/* ---------- Split by major ---------- */
+function openPlan(code){
+  if(!S.members.length){ toast('Add team members first'); location.hash='#team'; return; }
+  $('#planDeliv').innerHTML = DELIVERABLES.map(d=>`<option value="${d.code}">${d.code}: ${esc(d.name)} (due ${fmt(d.due)})</option>`).join('');
+  $('#planDeliv').value = code || nextOpenDeliv();
+  buildPlan(); openOverlay($('#planModal'));
+}
+function buildPlan(){
+  const code = $('#planDeliv').value, d = deliv(code);
+  const existing = S.tasks.filter(t=>t.deliv===code).length;
+  $('#planNotice').innerHTML = existing ? `<div class="notice">${d.name} already has ${existing} task${existing>1?'s':''}. Uncheck any you don't need so nothing is doubled up.</div>` : '';
+  $('#planList').innerHTML = S.members.map(m=>{
+    const [title, offset] = (TEMPLATES[code]||{})[m.role] || TEMPLATES[code].Other;
+    const due = addDays(d.due, -offset);
+    return `<li data-plan-member="${m.id}">
+      <input type="checkbox" checked aria-label="Include task for ${esc(m.name)}">
+      ${avatar(m.id)}
+      <div><input class="input" value="${esc(title)}" aria-label="Task for ${esc(m.name)}">
+        <div class="meta">${esc(m.name)}, ${esc(m.role)}. Due ${fmt(due)}, ${offset? offset+' day'+(offset>1?'s':'')+' before the deadline':'on the deadline'}.</div></div>
+    </li>`;
+  }).join('');
+  $('#planList').dataset.code = code;
+  updatePlanCount();
+}
+function updatePlanCount(){
+  const n = [...$('#planList').querySelectorAll('input[type=checkbox]')].filter(c=>c.checked).length;
+  $('#planCount').textContent = `${n} task${n===1?'':'s'} selected`;
+  $('#planAdd').textContent = n ? `Add ${n} task${n===1?'':'s'}` : 'Add tasks';
+  $('#planAdd').disabled = !n;
+}
+$('#planDeliv').addEventListener('change', buildPlan);
+$('#planList').addEventListener('change', updatePlanCount);
+$('#planAdd').addEventListener('click', ()=>{
+  const code = $('#planList').dataset.code, d = deliv(code);
+  let n = 0;
+  $('#planList').querySelectorAll('li').forEach(li=>{
+    if(!li.querySelector('input[type=checkbox]').checked) return;
+    const m = member(li.dataset.planMember);
+    const [, offset] = (TEMPLATES[code]||{})[m.role] || TEMPLATES[code].Other;
+    const title = li.querySelector('input.input').value.trim(); if(!title) return;
+    S.tasks.push({id:uid('t'), deliv:code, title, assignee:m.id, due:addDays(d.due,-offset), progress:0, notes:''}); n++;
+  });
+  save(); closeOverlay(); renderAll();
+  $('#fDeliv').value = code; renderTasks();
+  toast(`${n} task${n===1?'':'s'} added to ${d.name}`);
+});
+$('#openPlan').addEventListener('click', ()=>openPlan());
+
+/* ---------- Message modal ---------- */
+function openMessage(title, text){
+  $('#msgTitle').textContent = title; $('#msgText').value = text;
+  openOverlay($('#msgModal'));
+}
+$('#msgCopy').addEventListener('click', ()=>copyText($('#msgText').value, 'Message copied. Paste it in your team chat.'));
+$('#digestBtn').addEventListener('click', ()=>openMessage('Team update', digest()));
+
+/* =====================================================================
+   EVENTS (delegated)
+   ===================================================================== */
+document.addEventListener('click', e=>{
+  const t = e.target.closest('button, [data-goto-deliv]'); if(!t) return;
+  const d = t.dataset;
+  if(d.edit) openTask(d.edit);
+  if(d.nudge){ const x=S.tasks.find(y=>y.id===d.nudge); openMessage(`Reminder for ${nameOf(x.assignee)}`, taskMessage(x)); }
+  if(d.msnudge){ const m=MILESTONES[+d.msnudge]; openMessage('Team reminder', msMessage(m)); }
+  if(d.gotoDeliv){ resetGroups(); $('#fDeliv').value = d.gotoDeliv; $('#fMember').value='all'; $('#fStatus').value='all'; $('#fSearch').value=''; location.hash='#tasks'; renderTasks(); }
+  if('openPlan' in d) openPlan();
+  if('clearFilters' in d) clearFilters();
+  if(d.mremove){
+    if(!t.dataset.armed){ t.dataset.armed='1'; t.textContent='Select again to remove (deletes their tasks)'; return; }
+    const name = nameOf(d.mremove);
+    S.members = S.members.filter(m=>m.id!==d.mremove); S.tasks = S.tasks.filter(x=>x.assignee!==d.mremove);
+    save(); renderAll(); toast(`${name} removed`);
+  }
+});
+document.addEventListener('input', e=>{
+  const id = e.target.dataset.prog;
+  if(id){ const x=S.tasks.find(t=>t.id===id); x.progress=+e.target.value; e.target.nextElementSibling.textContent=x.progress+'%'; }
+});
+document.addEventListener('change', e=>{
+  const d = e.target.dataset;
+  if(d.prog){ save(); renderAll(); }
+  if(d.toggle){
+    const x=S.tasks.find(t=>t.id===d.toggle);
+    if(e.target.checked){ x.prevProgress = x.progress; x.progress = 100; toast(`Marked done: ${x.title}`); }
+    else { x.progress = (x.prevProgress!=null && x.prevProgress<100) ? x.prevProgress : 0; }
+    save(); renderAll();
+  }
+  if(d.mname){ const m=member(d.mname); m.name = e.target.value.trim() || m.name; save(); renderAll(); toast('Name saved'); }
+  if(d.mrole){ member(d.mrole).role = e.target.value; save(); renderAll(); toast('Major saved'); }
+});
+
+/* Filters */
+['#fSearch'].forEach(s=>$(s).addEventListener('input', ()=>{ resetGroups(); renderTasks(); }));
+['#fMember','#fDeliv','#fStatus'].forEach(s=>$(s).addEventListener('change', ()=>{ resetGroups(); renderTasks(); }));
+function resetGroups(){ for(const k in groupOpen) delete groupOpen[k]; }
+function clearFilters(){ resetGroups(); $('#fSearch').value=''; $('#fMember').value='all'; $('#fDeliv').value='all'; $('#fStatus').value='all'; renderTasks(); }
+$('#clearFilters').addEventListener('click', clearFilters);
+
+/* Team & settings */
+$('#addMember').addEventListener('click', ()=>{
+  const used = S.members.map(m=>m.role);
+  const role = Object.keys(ROLES).find(r=>!used.includes(r)) || 'Other';
+  S.members.push({id:uid('m'), name:'New member', role}); save(); renderAll();
+  const inputs = document.querySelectorAll('[data-mname]'); const last = inputs[inputs.length-1];
+  last && (last.focus(), last.select());
+});
+$('#setTeamName').addEventListener('change', e=>{ S.team = e.target.value.trim(); save(); renderAll(); toast('Team name saved'); });
+document.querySelectorAll('input[name=dmode]').forEach(r=>r.addEventListener('change', e=>{
+  S.dateMode = e.target.value; save(); renderAll();
+  toast(S.dateMode==='demo' ? `Using demo date ${fmt(today())}` : 'Using today\'s real date');
+}));
+$('#setDemoDate').addEventListener('change', e=>{ if(e.target.value){ S.demoDate = e.target.value; save(); renderAll(); toast(`Demo date set to ${fmt(S.demoDate)}`); } });
+$('#resetDemo').addEventListener('click', e=>{
+  const b=e.currentTarget;
+  if(!b.dataset.armed){ b.dataset.armed='1'; b.textContent='Select again to reset'; setTimeout(()=>{b.dataset.armed='';b.textContent='Reset demo data';},4000); return; }
+  S = demoState(); save(); b.dataset.armed=''; b.textContent='Reset demo data'; clearFilters(); renderAll(); toast('Demo data reset');
+});
+$('#startBlank').addEventListener('click', e=>{
+  const b=e.currentTarget;
+  if(!b.dataset.armed){ b.dataset.armed='1'; b.textContent='Select again to erase everything'; setTimeout(()=>{b.dataset.armed='';b.textContent='Start a blank project';},4000); return; }
+  S = {team:'My IBC team', dateMode:'real', demoDate:'2026-02-18', members:[], tasks:[]};
+  save(); b.dataset.armed=''; b.textContent='Start a blank project'; clearFilters(); renderAll(); toast('Blank project started');
+});
+
+/* ---------- Start ---------- */
+load(); renderAll(); route();
+</script>
+</body>
+</html>
